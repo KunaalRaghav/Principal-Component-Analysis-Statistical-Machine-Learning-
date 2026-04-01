@@ -5,9 +5,61 @@ format: pdf
 editor: visual
 ---
 
-## Quarto
+## Part 1
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+```{r}
+library(ISLR2)
+data("College")
+my.college <- College[-484, ] # remove an extreme case.
+#my.college <- College[College$Apps <=16000, ] # remove several extreme case.
+train.pct <- 0.78
+set.seed(2025)
+Z <- sample(nrow(my.college), floor(train.pct*nrow(my.college)))
+college.data <- my.college[Z, ]
+holdout.data <- my.college[-Z, ]
+
+```
+
+The Full model is below
+
+```{r}
+college.lmF <- lm(Apps ~ ., data = college.data)
+college.lmF
+
+```
+
+Step wise Selection Model
+
+```{r}
+library(MASS)
+college.lmAIC <- stepAIC(college.lmF, direction = "both", trace = FALSE)
+summary(college.lmAIC)
+
+
+```
+
+Best Subset Model
+
+```{r}
+library(leaps)
+
+best.sub <- regsubsets(
+  Apps ~ ., 
+  data = college.data,
+  nvmax = 17
+)
+
+best.sum <- summary(best.sub)
+
+which.min(best.sum$bic)
+
+college.lmBIC <- lm(
+  Apps ~ Private + Accept + Top10perc + Top25perc + 
+    Outstate + Room.Board + PhD + Expend,
+  data = college.data
+)
+summary(college.lmBIC)
+```
 
 ## Running Code
 
